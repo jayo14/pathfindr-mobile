@@ -107,11 +107,12 @@ const styles = StyleSheet.create({
   title: {
     color: theme.colors.text,
     fontSize: 30,
-    fontWeight: '900',
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
   },
   subtitle: {
     color: theme.colors.textMuted,
     fontSize: 15,
+    fontFamily: 'PlusJakartaSans_400Regular',
   },
   searchWrap: {
     paddingHorizontal: 20,
@@ -150,18 +151,19 @@ const styles = StyleSheet.create({
   resultCode: {
     color: theme.colors.primary,
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
     textTransform: 'uppercase',
     letterSpacing: 1.1,
   },
   resultTitle: {
     color: theme.colors.text,
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
   },
   resultDescription: {
     color: theme.colors.textMuted,
     fontSize: 14,
     lineHeight: 20,
+    fontFamily: 'PlusJakartaSans_400Regular',
   },
 });

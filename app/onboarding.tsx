@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     fontSize: 13,
-    fontWeight: '800',
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
     letterSpacing: 1.2,
     textTransform: 'uppercase',
     color: theme.colors.primary,
@@ -104,13 +104,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 36,
     lineHeight: 42,
-    fontWeight: '900',
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
     color: theme.colors.text,
   },
   subtitle: {
     fontSize: 17,
     lineHeight: 25,
     color: theme.colors.textMuted,
+    fontFamily: 'PlusJakartaSans_400Regular',
   },
   cardList: {
     gap: 14,
@@ -138,12 +139,13 @@ const styles = StyleSheet.create({
   featureTitle: {
     color: theme.colors.text,
     fontSize: 17,
-    fontWeight: '800',
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
   },
   featureDescription: {
     color: theme.colors.textMuted,
     fontSize: 15,
     lineHeight: 22,
+    fontFamily: 'PlusJakartaSans_400Regular',
   },
   footer: {
     paddingHorizontal: 24,

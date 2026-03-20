@@ -2,16 +2,16 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { ArrowUpRight, MapPinned } from 'lucide-react-native';
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { LeafletMapView, LeafletMarker } from '@/components/LeafletMapView';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { StateCard } from '@/components/StateCard';
 import { theme } from '@/constants/theme';
 import { useBuildings } from '@/hooks/useCampusData';
 import { useDirections } from '@/hooks/useDirections';
 import { useUserLocation } from '@/hooks/useUserLocation';
-import { formatDistance, getInitialRegion } from '@/utils/geo';
+import { formatDistance } from '@/utils/geo';
 
 export default function DirectionsScreen() {
   const params = useLocalSearchParams<{ buildingId: string }>();
@@ -33,23 +33,38 @@ export default function DirectionsScreen() {
     );
   }
 
-  const mapRegion = getInitialRegion({
+  const mapCenter = {
     latitude: (origin.latitude + destination.coordinate.latitude) / 2,
     longitude: (origin.longitude + destination.coordinate.longitude) / 2,
-    latitudeDelta: Math.abs(origin.latitude - destination.coordinate.latitude) + 0.004,
-    longitudeDelta: Math.abs(origin.longitude - destination.coordinate.longitude) + 0.004,
-  });
+  };
+
+  const markers: LeafletMarker[] = [
+    {
+      id: 'origin',
+      coordinate: origin,
+      title: 'You',
+      color: theme.colors.primaryDark,
+      isUser: true,
+    },
+    {
+      id: destination.id,
+      coordinate: destination.coordinate,
+      title: destination.name,
+      color: theme.colors.accent,
+    },
+  ];
 
   return (
     <SafeAreaView style={styles.container} testID="directions-screen">
       <Stack.Screen options={{ headerShown: false }} />
-      <MapView style={styles.map} initialRegion={mapRegion} testID="directions-map">
-        <Marker coordinate={origin} title="You" pinColor={theme.colors.primaryDark} />
-        <Marker coordinate={destination.coordinate} title={destination.name} pinColor={theme.colors.accent} />
-        {directionsQuery.data ? (
-          <Polyline coordinates={directionsQuery.data.points} strokeWidth={5} strokeColor={theme.colors.primary} />
-        ) : null}
-      </MapView>
+      <LeafletMapView
+        center={mapCenter}
+        zoom={16}
+        markers={markers}
+        route={directionsQuery.data?.points ?? []}
+        userLocation={origin}
+        style={styles.map}
+      />
 
       <View style={styles.overlayCard}>
         <View style={styles.headerRow}>
@@ -127,13 +142,13 @@ const styles = StyleSheet.create({
   routeLabel: {
     color: theme.colors.textMuted,
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: 'PlusJakartaSans_700Bold',
     textTransform: 'uppercase',
   },
   routeTitle: {
     color: theme.colors.text,
     fontSize: 22,
-    fontWeight: '900',
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
   },
   metricsRow: {
     flexDirection: 'row',
@@ -149,12 +164,12 @@ const styles = StyleSheet.create({
   metricValue: {
     color: theme.colors.text,
     fontSize: 24,
-    fontWeight: '900',
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
   },
   metricLabel: {
     color: theme.colors.textMuted,
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: 'PlusJakartaSans_700Bold',
   },
   tipRow: {
     flexDirection: 'row',
@@ -166,5 +181,6 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
     fontSize: 14,
     lineHeight: 21,
+    fontFamily: 'PlusJakartaSans_400Regular',
   },
 });

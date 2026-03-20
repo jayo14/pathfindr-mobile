@@ -1,9 +1,17 @@
+import {
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
+  useFonts,
+} from '@expo-google-fonts/plus-jakarta-sans';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Text, TextInput } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -13,6 +21,26 @@ import { theme } from '@/constants/theme';
 void SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
+
+/** Apply Plus Jakarta Sans as the default font across all Text and TextInput
+ *  elements without requiring per-component font style overrides. */
+function applyGlobalFont(): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const TextAny = Text as any;
+  TextAny.defaultProps = TextAny.defaultProps ?? {};
+  TextAny.defaultProps.style = [
+    { fontFamily: 'PlusJakartaSans_400Regular' },
+    TextAny.defaultProps.style,
+  ];
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const InputAny = TextInput as any;
+  InputAny.defaultProps = InputAny.defaultProps ?? {};
+  InputAny.defaultProps.style = [
+    { fontFamily: 'PlusJakartaSans_400Regular' },
+    InputAny.defaultProps.style,
+  ];
+}
 
 function RootLayoutNav() {
   return (
@@ -28,9 +56,24 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
+  });
+
   useEffect(() => {
-    void SplashScreen.hideAsync();
-  }, []);
+    if (fontsLoaded) {
+      applyGlobalFont();
+      void SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

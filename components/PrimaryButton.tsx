@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'PlusJakartaSans_700Bold',
   },
   primaryLabel: {
     color: '#FFFFFF',

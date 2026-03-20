@@ -69,13 +69,14 @@ const styles = StyleSheet.create({
   title: {
     color: theme.colors.text,
     fontSize: 40,
-    fontWeight: '900',
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
   },
   subtitle: {
     color: theme.colors.textMuted,
     fontSize: 17,
     lineHeight: 25,
     textAlign: 'center',
+    fontFamily: 'PlusJakartaSans_400Regular',
   },
   footerPill: {
     paddingHorizontal: 18,
@@ -86,6 +87,6 @@ const styles = StyleSheet.create({
   footerText: {
     color: theme.colors.primary,
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: 'PlusJakartaSans_700Bold',
   },
 });

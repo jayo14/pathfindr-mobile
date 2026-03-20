@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { LocateFixed, Search, Sparkles } from 'lucide-react-native';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
     FlatList,
     Pressable,
@@ -9,22 +9,20 @@ import {
     Text,
     View,
 } from 'react-native';
-import MapView, { Marker, Region, UrlTile } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { LeafletMapView, LeafletMarker } from '@/components/LeafletMapView';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { SectionHeader } from '@/components/SectionHeader';
 import { StateCard } from '@/components/StateCard';
-import { theme } from '@/constants/theme';
+import { categoryColors, theme } from '@/constants/theme';
 import { useBuildings } from '@/hooks/useCampusData';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { useAppStore } from '@/store/useAppStore';
-import { Building, StoredMapRegion } from '@/types/domain';
-import { clusterBuildings } from '@/utils/clustering';
+import { Building } from '@/types/domain';
 import { getInitialRegion } from '@/utils/geo';
 
 export default function MapScreen() {
-  const mapRef = useRef<MapView | null>(null);
   const { buildings, isLoading, isError } = useBuildings();
   const {
     location,
@@ -35,11 +33,22 @@ export default function MapScreen() {
     error: locationError,
   } = useUserLocation();
   const lastMapRegion = useAppStore((state) => state.lastMapRegion);
-  const setLastMapRegion = useAppStore((state) => state.setLastMapRegion);
   const setSelectedBuildingId = useAppStore((state) => state.setSelectedBuildingId);
-  const [region, setRegion] = useState<StoredMapRegion>(getInitialRegion(lastMapRegion));
+  const [mapReady, setMapReady] = useState(false);
 
-  const clusteredMarkers = useMemo(() => clusterBuildings(buildings, region), [buildings, region]);
+  const defaultCenter = getInitialRegion(lastMapRegion);
+
+  const markers = useMemo<LeafletMarker[]>(
+    () =>
+      buildings.map((b) => ({
+        id: b.id,
+        coordinate: b.coordinate,
+        title: b.name,
+        color: categoryColors[b.category],
+      })),
+    [buildings],
+  );
+
   const featuredBuildings = useMemo<Building[]>(() => buildings.slice(0, 4), [buildings]);
 
   const handleOpenSearch = (): void => {
@@ -47,36 +56,8 @@ export default function MapScreen() {
   };
 
   const handleMarkerPress = (buildingId: string): void => {
-    const marker = clusteredMarkers.find((item) => item.buildingIds[0] === buildingId || item.id === buildingId);
-
-    if (marker?.isCluster) {
-      const nextRegion: Region = {
-        latitude: marker.latitude,
-        longitude: marker.longitude,
-        latitudeDelta: Math.max(region.latitudeDelta * 0.55, 0.0022),
-        longitudeDelta: Math.max(region.longitudeDelta * 0.55, 0.0022),
-      };
-
-      mapRef.current?.animateToRegion(nextRegion, 350);
-      setRegion(nextRegion);
-      setLastMapRegion(nextRegion);
-      return;
-    }
-
     setSelectedBuildingId(buildingId);
     router.push(`/building/${buildingId}`);
-  };
-
-  const handleRegionChangeComplete = (nextRegion: Region): void => {
-    const storedRegion: StoredMapRegion = {
-      latitude: nextRegion.latitude,
-      longitude: nextRegion.longitude,
-      latitudeDelta: nextRegion.latitudeDelta,
-      longitudeDelta: nextRegion.longitudeDelta,
-    };
-
-    setRegion(storedRegion);
-    setLastMapRegion(storedRegion);
   };
 
   const centerOnUser = async (): Promise<void> => {
@@ -84,57 +65,20 @@ export default function MapScreen() {
       await requestPermission();
       return;
     }
-
     await refreshLocation();
-
-    if (location) {
-      const nextRegion: Region = {
-        latitude: location.latitude,
-        longitude: location.longitude,
-        latitudeDelta: 0.004,
-        longitudeDelta: 0.004,
-      };
-      mapRef.current?.animateToRegion(nextRegion, 350);
-    }
   };
 
   return (
     <View style={styles.container}>
-      <MapView
-        ref={mapRef}
+      <LeafletMapView
+        center={defaultCenter}
+        zoom={16}
+        markers={markers}
+        userLocation={location}
+        onMarkerPress={handleMarkerPress}
+        onMapReady={() => setMapReady(true)}
         style={styles.map}
-        initialRegion={region}
-        onRegionChangeComplete={handleRegionChangeComplete}
-        showsUserLocation={locationPermissionStatus === 'granted'}
-        showsCompass
-        showsMyLocationButton={false}
-        testID="campus-map"
-      >
-        <UrlTile
-          maximumZ={19}
-          flipY={false}
-          urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-          zIndex={-1}
-        />
-
-        {clusteredMarkers.map((marker) => (
-          <Marker
-            key={marker.id}
-            coordinate={{ latitude: marker.latitude, longitude: marker.longitude }}
-            onPress={() => handleMarkerPress(marker.id)}
-            pinColor={marker.color}
-            testID={`map-marker-${marker.id}`}
-          >
-            {marker.isCluster ? (
-              <View style={styles.clusterMarker}>
-                <Text style={styles.clusterCount}>{marker.count}</Text>
-              </View>
-            ) : (
-              <View style={[styles.singleMarker, { backgroundColor: marker.color }]} />
-            )}
-          </Marker>
-        ))}
-      </MapView>
+      />
 
       <SafeAreaView style={styles.overlay} pointerEvents="box-none">
         <View style={styles.topBar}>
@@ -142,7 +86,11 @@ export default function MapScreen() {
             <Search color={theme.colors.textMuted} size={18} />
             <Text style={styles.searchLabel}>Search buildings, departments, facilities</Text>
           </Pressable>
-          <Pressable style={styles.locateButton} onPress={() => void centerOnUser()} testID="center-location-button">
+          <Pressable
+            style={styles.locateButton}
+            onPress={() => void centerOnUser()}
+            testID="center-location-button"
+          >
             <LocateFixed color={theme.colors.primary} size={18} />
           </Pressable>
         </View>
@@ -150,7 +98,7 @@ export default function MapScreen() {
         <View style={styles.bottomSheet}>
           <SectionHeader
             title="Explore campus"
-            subtitle="Smart markers, live position, and quick routes"
+            subtitle="Live position, smart markers, and quick routes"
             actionLabel="Search"
             onPressAction={handleOpenSearch}
           />
@@ -262,6 +210,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: theme.colors.textMuted,
     fontSize: 15,
+    fontFamily: 'PlusJakartaSans_400Regular',
   },
   locateButton: {
     width: 52,
@@ -323,39 +272,17 @@ const styles = StyleSheet.create({
   placePillText: {
     color: theme.colors.primary,
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
   },
   placeTitle: {
     color: theme.colors.text,
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
   },
   placeSubtitle: {
     color: theme.colors.textMuted,
     fontSize: 14,
     lineHeight: 21,
-  },
-  clusterMarker: {
-    minWidth: 34,
-    minHeight: 34,
-    paddingHorizontal: 10,
-    borderRadius: 17,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
-  },
-  clusterCount: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  singleMarker: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
+    fontFamily: 'PlusJakartaSans_400Regular',
   },
 });

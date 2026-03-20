@@ -94,19 +94,20 @@ const styles = StyleSheet.create({
   eyebrow: {
     color: theme.colors.primary,
     fontSize: 13,
-    fontWeight: '800',
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
     textTransform: 'uppercase',
     letterSpacing: 1.1,
   },
   title: {
     color: theme.colors.text,
     fontSize: 30,
-    fontWeight: '900',
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
   },
   subtitle: {
     color: theme.colors.textMuted,
     fontSize: 15,
     lineHeight: 22,
+    fontFamily: 'PlusJakartaSans_400Regular',
   },
   sectionCard: {
     borderRadius: 28,
@@ -125,6 +126,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: 15,
     lineHeight: 22,
+    fontFamily: 'PlusJakartaSans_400Regular',
   },
   primaryAction: {
     borderRadius: theme.radius.pill,
@@ -135,7 +137,7 @@ const styles = StyleSheet.create({
   primaryActionText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '800',
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
   },
   secondaryAction: {
     borderRadius: theme.radius.pill,
@@ -148,6 +150,6 @@ const styles = StyleSheet.create({
   secondaryActionText: {
     color: theme.colors.primary,
     fontSize: 16,
-    fontWeight: '800',
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
   },
 });
