@@ -1,12 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { campusGraphNodes } from "@/constants/campusGraph";
 import { CampusCoordinate, RouteSummary } from "@/types/domain";
 import {
     createFallbackRoute,
     estimateWalkingMinutes,
     getDistanceMeters,
 } from "@/utils/geo";
+import {
+    buildCampusGraph,
+    dijkstra,
+    nearestNode,
+    pathToRouteSegments,
+} from "@/utils/dijkstra";
 
+/** Campus graph built once from the static waypoint list. */
+const campusGraph = buildCampusGraph(campusGraphNodes);
+
+/** Attempt to fetch a live walking route from OSRM (internet access required).
+ *  Falls back to Dijkstra on the campus graph when unavailable. */
 async function fetchWalkingRoute(
   origin: CampusCoordinate,
   destination: CampusCoordinate,
@@ -39,16 +51,49 @@ async function fetchWalkingRoute(
         longitude,
       })),
     };
-  } catch (error) {
-    console.log("PathFindr route fallback", error);
-    const distanceMeters = getDistanceMeters(origin, destination);
-
-    return {
-      distanceMeters,
-      durationMinutes: estimateWalkingMinutes(distanceMeters),
-      points: createFallbackRoute(origin, destination),
-    };
+  } catch {
+    // Fall back to Dijkstra's algorithm on the campus graph
+    return computeDijkstraRoute(origin, destination);
   }
+}
+
+/** Compute a route using Dijkstra's algorithm on the campus waypoint graph.
+ *  Uses the haversine distance as the edge weight. */
+function computeDijkstraRoute(
+  origin: CampusCoordinate,
+  destination: CampusCoordinate,
+): RouteSummary {
+  const startId = nearestNode(campusGraph, origin);
+  const endId = nearestNode(campusGraph, destination);
+
+  if (startId && endId) {
+    const result = dijkstra(campusGraph, startId, endId);
+    if (result && result.path.length > 1) {
+      const segments = pathToRouteSegments(campusGraph, result.path);
+      // Prepend the exact origin and append the exact destination
+      const points = [origin, ...segments, destination];
+
+      // Sum actual segment distances for accurate distance reporting
+      let distanceMeters = 0;
+      for (let i = 0; i < points.length - 1; i++) {
+        distanceMeters += getDistanceMeters(points[i], points[i + 1]);
+      }
+
+      return {
+        distanceMeters,
+        durationMinutes: estimateWalkingMinutes(distanceMeters),
+        points,
+      };
+    }
+  }
+
+  // Last resort: straight-line fallback
+  const distanceMeters = getDistanceMeters(origin, destination);
+  return {
+    distanceMeters,
+    durationMinutes: estimateWalkingMinutes(distanceMeters),
+    points: createFallbackRoute(origin, destination),
+  };
 }
 
 export function useDirections(

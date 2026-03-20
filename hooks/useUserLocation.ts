@@ -1,5 +1,5 @@
 import * as Location from "expo-location";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAppStore } from "@/store/useAppStore";
 import { CampusCoordinate } from "@/types/domain";
@@ -15,6 +15,9 @@ export function useUserLocation() {
   );
   const setLocationPermissionStatus = useAppStore(
     (state) => state.setLocationPermissionStatus,
+  );
+  const watchSubscriptionRef = useRef<Location.LocationSubscription | null>(
+    null,
   );
 
   const requestPermission = useCallback(async (): Promise<boolean> => {
@@ -42,7 +45,7 @@ export function useUserLocation() {
 
     try {
       const current = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
+        accuracy: Location.Accuracy.High,
       });
       setLocation({
         latitude: current.coords.latitude,
@@ -56,10 +59,51 @@ export function useUserLocation() {
     }
   }, []);
 
+  /** Start watching the device GPS for continuous position updates. */
+  const startWatchingLocation = useCallback(async (): Promise<void> => {
+    if (watchSubscriptionRef.current) return; // already watching
+
+    try {
+      const subscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          timeInterval: 4000,
+          distanceInterval: 5,
+        },
+        (pos) => {
+          setLocation({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          });
+          setError(undefined);
+        },
+      );
+      watchSubscriptionRef.current = subscription;
+    } catch (watchError) {
+      console.log("PathFindr GPS watch error", watchError);
+    }
+  }, []);
+
+  /** Stop watching GPS. */
+  const stopWatchingLocation = useCallback((): void => {
+    watchSubscriptionRef.current?.remove();
+    watchSubscriptionRef.current = null;
+  }, []);
+
+  // Auto-start watching when permission is granted
   useEffect(() => {
     if (locationPermissionStatus === "granted") {
       void refreshLocation();
+      void startWatchingLocation();
+    } else {
+      stopWatchingLocation();
     }
+
+    return () => {
+      stopWatchingLocation();
+    };
+    // startWatchingLocation and stopWatchingLocation are stable useCallback refs
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locationPermissionStatus, refreshLocation]);
 
   return {
@@ -69,5 +113,7 @@ export function useUserLocation() {
     locationPermissionStatus,
     requestPermission,
     refreshLocation,
+    startWatchingLocation,
+    stopWatchingLocation,
   };
 }

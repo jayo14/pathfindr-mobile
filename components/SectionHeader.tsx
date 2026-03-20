@@ -38,16 +38,17 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '800',
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
     color: theme.colors.text,
   },
   subtitle: {
     fontSize: 14,
     color: theme.colors.textMuted,
+    fontFamily: 'PlusJakartaSans_400Regular',
   },
   action: {
     color: theme.colors.primary,
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: 'PlusJakartaSans_700Bold',
   },
 });
