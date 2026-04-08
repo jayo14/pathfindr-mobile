@@ -38,17 +38,17 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
     color: theme.colors.text,
   },
   subtitle: {
     fontSize: 14,
     color: theme.colors.textMuted,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
   action: {
     color: theme.colors.primary,
     fontSize: 14,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Poppins_700Bold',
   },
 });

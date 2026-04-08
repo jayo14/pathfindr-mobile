@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Poppins_700Bold',
   },
   activeLabel: {
     color: '#FFFFFF',

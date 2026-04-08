@@ -221,20 +221,20 @@ const styles = StyleSheet.create({
   eyebrow: {
     color: theme.colors.primary,
     fontSize: 13,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
     textTransform: 'uppercase',
     letterSpacing: 1.1,
   },
   title: {
     color: theme.colors.text,
     fontSize: 30,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   subtitle: {
     color: theme.colors.textMuted,
     fontSize: 15,
     lineHeight: 22,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
   composerToggle: {
     flexDirection: 'row',
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   formTitle: {
     color: theme.colors.text,
     fontSize: 18,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   statusRow: {
     flexDirection: 'row',
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     color: theme.colors.text,
     fontSize: 15,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
   multilineInput: {
     minHeight: 96,
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   buildingPillText: {
     color: theme.colors.textMuted,
     fontSize: 13,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   buildingPillTextActive: {
     color: '#FFFFFF',
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   imagePickerText: {
     color: theme.colors.primary,
     fontSize: 14,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Poppins_700Bold',
   },
   helperText: {
     color: theme.colors.textMuted,
@@ -367,32 +367,32 @@ const styles = StyleSheet.create({
   statusText: {
     color: '#FFFFFF',
     fontSize: 11,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   reportTime: {
     color: theme.colors.textMuted,
     fontSize: 12,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Poppins_700Bold',
   },
   reportTitle: {
     color: theme.colors.text,
     fontSize: 18,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   reportDescription: {
     color: theme.colors.textMuted,
     fontSize: 14,
     lineHeight: 20,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
   reportLocation: {
     color: theme.colors.text,
     fontSize: 13,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Poppins_700Bold',
   },
   reportHint: {
     color: theme.colors.primary,
     fontSize: 13,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Poppins_700Bold',
   },
 });

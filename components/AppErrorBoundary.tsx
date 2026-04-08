@@ -73,20 +73,20 @@ const styles = StyleSheet.create({
   eyebrow: {
     color: theme.colors.primary,
     fontSize: 13,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Poppins_700Bold',
     textTransform: 'uppercase',
     letterSpacing: 1.1,
   },
   title: {
     color: theme.colors.text,
     fontSize: 28,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   description: {
     color: theme.colors.textMuted,
     fontSize: 16,
     lineHeight: 23,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
   button: {
     marginTop: 8,
@@ -98,6 +98,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Poppins_700Bold',
   },
 });

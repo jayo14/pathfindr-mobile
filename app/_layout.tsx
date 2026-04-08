@@ -1,11 +1,16 @@
 import {
-    PlusJakartaSans_400Regular,
-    PlusJakartaSans_500Medium,
-    PlusJakartaSans_600SemiBold,
-    PlusJakartaSans_700Bold,
-    PlusJakartaSans_800ExtraBold,
-    useFonts,
-} from '@expo-google-fonts/plus-jakarta-sans';
+    DMSans_400Regular,
+    DMSans_500Medium,
+    DMSans_600SemiBold,
+    useFonts as useDMSansFonts,
+} from '@expo-google-fonts/dm-sans';
+import {
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
+    Poppins_800ExtraBold,
+    useFonts as usePoppinsFonts,
+} from '@expo-google-fonts/poppins';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -20,16 +25,23 @@ import { theme } from '@/constants/theme';
 
 void SplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,   // 5 minutes
+      gcTime: 30 * 60 * 1000,     // 30 minutes
+    },
+  },
+});
 
-/** Apply Plus Jakarta Sans as the default font across all Text and TextInput
+/** Apply DM Sans as the default body font across all Text and TextInput
  *  elements without requiring per-component font style overrides. */
 function applyGlobalFont(): void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const TextAny = Text as any;
   TextAny.defaultProps = TextAny.defaultProps ?? {};
   TextAny.defaultProps.style = [
-    { fontFamily: 'PlusJakartaSans_400Regular' },
+    { fontFamily: 'DMSans_400Regular' },
     TextAny.defaultProps.style,
   ];
 
@@ -37,7 +49,7 @@ function applyGlobalFont(): void {
   const InputAny = TextInput as any;
   InputAny.defaultProps = InputAny.defaultProps ?? {};
   InputAny.defaultProps.style = [
-    { fontFamily: 'PlusJakartaSans_400Regular' },
+    { fontFamily: 'DMSans_400Regular' },
     InputAny.defaultProps.style,
   ];
 }
@@ -46,6 +58,7 @@ function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.background } }}>
       <Stack.Screen name="index" />
+      <Stack.Screen name="auth" />
       <Stack.Screen name="onboarding" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="search" options={{ presentation: 'modal' }} />
@@ -56,18 +69,26 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded, fontsError] = useFonts({
-    PlusJakartaSans_400Regular,
-    PlusJakartaSans_500Medium,
-    PlusJakartaSans_600SemiBold,
-    PlusJakartaSans_700Bold,
-    PlusJakartaSans_800ExtraBold,
+  const [dmSansLoaded, dmSansError] = useDMSansFonts({
+    DMSans_400Regular,
+    DMSans_500Medium,
+    DMSans_600SemiBold,
   });
+
+  const [poppinsLoaded, poppinsError] = usePoppinsFonts({
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
+    Poppins_800ExtraBold,
+  });
+
+  const fontsLoaded = dmSansLoaded && poppinsLoaded;
+  const fontsError = dmSansError ?? poppinsError;
 
   useEffect(() => {
     if (fontsLoaded || fontsError) {
       if (fontsLoaded) {
-      applyGlobalFont();
+        applyGlobalFont();
       }
       void SplashScreen.hideAsync();
     }

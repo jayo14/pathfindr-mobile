@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { LeafletMapView, LeafletMarker } from '@/components/LeafletMapView';
+import { NativeMapView, NativeMarker } from '@/components/NativeMapView';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { StateCard } from '@/components/StateCard';
 import { theme } from '@/constants/theme';
@@ -33,19 +33,14 @@ export default function DirectionsScreen() {
     );
   }
 
-  const mapCenter = {
+  const mapRegion = {
     latitude: (origin.latitude + destination.coordinate.latitude) / 2,
     longitude: (origin.longitude + destination.coordinate.longitude) / 2,
+    latitudeDelta: Math.abs(origin.latitude - destination.coordinate.latitude) * 3 + 0.004,
+    longitudeDelta: Math.abs(origin.longitude - destination.coordinate.longitude) * 3 + 0.004,
   };
 
-  const markers: LeafletMarker[] = [
-    {
-      id: 'origin',
-      coordinate: origin,
-      title: 'You',
-      color: theme.colors.primaryDark,
-      isUser: true,
-    },
+  const markers: NativeMarker[] = [
     {
       id: destination.id,
       coordinate: destination.coordinate,
@@ -57,9 +52,8 @@ export default function DirectionsScreen() {
   return (
     <SafeAreaView style={styles.container} testID="directions-screen">
       <Stack.Screen options={{ headerShown: false }} />
-      <LeafletMapView
-        center={mapCenter}
-        zoom={16}
+      <NativeMapView
+        region={mapRegion}
         markers={markers}
         route={directionsQuery.data?.points ?? []}
         userLocation={origin}
@@ -142,13 +136,13 @@ const styles = StyleSheet.create({
   routeLabel: {
     color: theme.colors.textMuted,
     fontSize: 13,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Poppins_700Bold',
     textTransform: 'uppercase',
   },
   routeTitle: {
     color: theme.colors.text,
     fontSize: 22,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   metricsRow: {
     flexDirection: 'row',
@@ -164,12 +158,12 @@ const styles = StyleSheet.create({
   metricValue: {
     color: theme.colors.text,
     fontSize: 24,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   metricLabel: {
     color: theme.colors.textMuted,
     fontSize: 13,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Poppins_700Bold',
   },
   tipRow: {
     flexDirection: 'row',
@@ -181,6 +175,6 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
     fontSize: 14,
     lineHeight: 21,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
 });
