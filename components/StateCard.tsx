@@ -31,12 +31,12 @@ const styles = StyleSheet.create({
   title: {
     color: theme.colors.text,
     fontSize: 18,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   description: {
     color: theme.colors.textMuted,
     fontSize: 15,
     lineHeight: 22,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
 });

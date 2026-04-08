@@ -107,20 +107,20 @@ const styles = StyleSheet.create({
   code: {
     color: theme.colors.primary,
     fontSize: 13,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
     letterSpacing: 1.1,
     textTransform: 'uppercase',
   },
   title: {
     color: theme.colors.text,
     fontSize: 30,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   description: {
     color: theme.colors.textMuted,
     fontSize: 16,
     lineHeight: 24,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
   metaRow: {
     flexDirection: 'row',
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: theme.colors.text,
     fontSize: 14,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Poppins_700Bold',
   },
   section: {
     gap: 10,
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: theme.colors.text,
     fontSize: 18,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   listPill: {
     borderRadius: theme.radius.md,
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   listPillText: {
     color: theme.colors.text,
     fontSize: 15,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
   footer: {
     gap: 10,

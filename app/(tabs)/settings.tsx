@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { DatabaseZap, Download, MapPinned, ShieldCheck } from 'lucide-react-native';
+import { DatabaseZap, Download, LogOut, MapPinned, ShieldCheck } from 'lucide-react-native';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -13,7 +13,15 @@ export default function SettingsScreen() {
   const hasCompletedOnboarding = useAppStore((state) => state.hasCompletedOnboarding);
   const locationPermissionStatus = useAppStore((state) => state.locationPermissionStatus);
   const lastMapRegion = useAppStore((state) => state.lastMapRegion);
+  const userEmail = useAppStore((state) => state.userEmail);
+  const isGuest = useAppStore((state) => state.isGuest);
   const setHasCompletedOnboarding = useAppStore((state) => state.setHasCompletedOnboarding);
+  const logout = useAppStore((state) => state.logout);
+
+  const handleLogout = (): void => {
+    logout();
+    router.replace('/auth');
+  };
 
   return (
     <SafeAreaView style={styles.container} testID="settings-screen">
@@ -52,6 +60,16 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        <View style={styles.sectionCard}>
+          <SectionHeader title="Account" subtitle={isGuest ? 'Browsing as a guest' : 'Signed in'} />
+          <View style={styles.row}>
+            <ShieldCheck color={theme.colors.primary} size={18} />
+            <Text style={styles.rowText}>
+              {isGuest ? 'Guest mode – sign in for full sync' : `Signed in as ${userEmail ?? 'Unknown'}`}
+            </Text>
+          </View>
+        </View>
+
         <Pressable
           style={styles.primaryAction}
           onPress={() => void campusDataQuery.refetch()}
@@ -71,6 +89,15 @@ export default function SettingsScreen() {
           <Text style={styles.secondaryActionText}>
             {hasCompletedOnboarding ? 'Replay onboarding' : 'Open onboarding'}
           </Text>
+        </Pressable>
+
+        <Pressable
+          style={styles.dangerAction}
+          onPress={handleLogout}
+          testID="logout-button"
+        >
+          <LogOut color={theme.colors.danger} size={16} />
+          <Text style={styles.dangerActionText}>{isGuest ? 'Exit guest mode' : 'Sign out'}</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>
@@ -94,20 +121,20 @@ const styles = StyleSheet.create({
   eyebrow: {
     color: theme.colors.primary,
     fontSize: 13,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
     textTransform: 'uppercase',
     letterSpacing: 1.1,
   },
   title: {
     color: theme.colors.text,
     fontSize: 30,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   subtitle: {
     color: theme.colors.textMuted,
     fontSize: 15,
     lineHeight: 22,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
   sectionCard: {
     borderRadius: 28,
@@ -126,7 +153,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: 15,
     lineHeight: 22,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
   primaryAction: {
     borderRadius: theme.radius.pill,
@@ -137,7 +164,7 @@ const styles = StyleSheet.create({
   primaryActionText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   secondaryAction: {
     borderRadius: theme.radius.pill,
@@ -150,6 +177,22 @@ const styles = StyleSheet.create({
   secondaryActionText: {
     color: theme.colors.primary,
     fontSize: 16,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
+  },
+  dangerAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.danger,
+    paddingVertical: 16,
+  },
+  dangerActionText: {
+    color: theme.colors.danger,
+    fontSize: 16,
+    fontFamily: 'Poppins_700Bold',
   },
 });

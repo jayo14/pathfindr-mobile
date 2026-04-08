@@ -81,20 +81,20 @@ const styles = StyleSheet.create({
   eyebrow: {
     color: theme.colors.primary,
     fontSize: 13,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
     letterSpacing: 1.1,
     textTransform: 'uppercase',
   },
   title: {
     color: theme.colors.text,
     fontSize: 30,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   subtitle: {
     color: theme.colors.textMuted,
     fontSize: 15,
     lineHeight: 22,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
   sectionWrap: {
     paddingHorizontal: 20,
@@ -136,18 +136,18 @@ const styles = StyleSheet.create({
   dateText: {
     color: theme.colors.primary,
     fontSize: 13,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   eventTitle: {
     color: theme.colors.text,
     fontSize: 22,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   eventDescription: {
     color: theme.colors.textMuted,
     fontSize: 15,
     lineHeight: 22,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
   infoRow: {
     flexDirection: 'row',
@@ -157,6 +157,6 @@ const styles = StyleSheet.create({
   infoText: {
     color: theme.colors.text,
     fontSize: 14,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
+    fontFamily: 'DMSans_600SemiBold',
   },
 });

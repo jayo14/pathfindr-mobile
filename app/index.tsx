@@ -9,20 +9,27 @@ import { theme } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 
 export default function SplashScreen() {
+  const isAuthenticated = useAppStore((state) => state.isAuthenticated);
+  const isGuest = useAppStore((state) => state.isGuest);
   const hasCompletedOnboarding = useAppStore((state) => state.hasCompletedOnboarding);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (hasCompletedOnboarding) {
-        router.replace('/(tabs)/map');
+      if (isAuthenticated || isGuest) {
+        // Already logged in – skip auth, go to onboarding or map
+        if (hasCompletedOnboarding) {
+          router.replace('/(tabs)/map');
+        } else {
+          router.replace('/onboarding');
+        }
         return;
       }
-
-      router.replace('/onboarding');
-    }, 1500);
+      // Not yet authenticated – show the auth screen
+      router.replace('/auth');
+    }, 1200);
 
     return () => clearTimeout(timeout);
-  }, [hasCompletedOnboarding]);
+  }, [isAuthenticated, isGuest, hasCompletedOnboarding]);
 
   return (
     <LinearGradient colors={['#E9F7EE', '#F9FBF7']} style={styles.gradient}>
@@ -69,14 +76,14 @@ const styles = StyleSheet.create({
   title: {
     color: theme.colors.text,
     fontSize: 40,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   subtitle: {
     color: theme.colors.textMuted,
     fontSize: 17,
     lineHeight: 25,
     textAlign: 'center',
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
   footerPill: {
     paddingHorizontal: 18,
@@ -87,6 +94,6 @@ const styles = StyleSheet.create({
   footerText: {
     color: theme.colors.primary,
     fontSize: 14,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Poppins_700Bold',
   },
 });

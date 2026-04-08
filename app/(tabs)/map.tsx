@@ -1,7 +1,8 @@
 import { Image } from 'expo-image';
+import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { LocateFixed, Search, Sparkles } from 'lucide-react-native';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
     FlatList,
     Pressable,
@@ -11,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { LeafletMapView, LeafletMarker } from '@/components/LeafletMapView';
+import { NativeMapView, NativeMarker } from '@/components/NativeMapView';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { SectionHeader } from '@/components/SectionHeader';
 import { StateCard } from '@/components/StateCard';
@@ -19,7 +20,8 @@ import { categoryColors, theme } from '@/constants/theme';
 import { useBuildings } from '@/hooks/useCampusData';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { useAppStore } from '@/store/useAppStore';
-import { Building } from '@/types/domain';
+import { Building, StoredMapRegion } from '@/types/domain';
+import { clusterBuildings } from '@/utils/clustering';
 import { getInitialRegion } from '@/utils/geo';
 
 export default function MapScreen() {
@@ -33,51 +35,69 @@ export default function MapScreen() {
     error: locationError,
   } = useUserLocation();
   const lastMapRegion = useAppStore((state) => state.lastMapRegion);
+  const setLastMapRegion = useAppStore((state) => state.setLastMapRegion);
   const setSelectedBuildingId = useAppStore((state) => state.setSelectedBuildingId);
-  const [mapReady, setMapReady] = useState(false);
 
-  const defaultCenter = getInitialRegion(lastMapRegion);
-
-  const markers = useMemo<LeafletMarker[]>(
-    () =>
-      buildings.map((b) => ({
-        id: b.id,
-        coordinate: b.coordinate,
-        title: b.name,
-        color: categoryColors[b.category],
-      })),
-    [buildings],
+  const [currentRegion, setCurrentRegion] = useState<StoredMapRegion>(
+    getInitialRegion(lastMapRegion),
   );
+
+  const handleRegionChange = useCallback(
+    (region: StoredMapRegion) => {
+      setCurrentRegion(region);
+      setLastMapRegion(region);
+    },
+    [setLastMapRegion],
+  );
+
+  /** Cluster buildings for the current zoom level. */
+  const clusteredMarkers = useMemo<NativeMarker[]>(() => {
+    const clusters = clusterBuildings(buildings, currentRegion);
+    return clusters.map((c) => ({
+      id: c.id,
+      coordinate: { latitude: c.latitude, longitude: c.longitude },
+      title: c.title,
+      color: c.color,
+      isCluster: c.isCluster,
+      clusterCount: c.count,
+    }));
+  }, [buildings, currentRegion]);
 
   const featuredBuildings = useMemo<Building[]>(() => buildings.slice(0, 4), [buildings]);
 
-  const handleOpenSearch = (): void => {
+  const handleOpenSearch = useCallback((): void => {
+    void Haptics.selectionAsync();
     router.push('/search');
-  };
+  }, []);
 
-  const handleMarkerPress = (buildingId: string): void => {
-    setSelectedBuildingId(buildingId);
-    router.push(`/building/${buildingId}`);
-  };
+  const handleMarkerPress = useCallback(
+    (buildingId: string): void => {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      setSelectedBuildingId(buildingId);
+      router.push(`/building/${buildingId}`);
+    },
+    [setSelectedBuildingId],
+  );
 
-  const centerOnUser = async (): Promise<void> => {
+  const centerOnUser = useCallback(async (): Promise<void> => {
+    void Haptics.selectionAsync();
     if (locationPermissionStatus !== 'granted') {
       await requestPermission();
       return;
     }
     await refreshLocation();
-  };
+  }, [locationPermissionStatus, requestPermission, refreshLocation]);
 
   return (
     <View style={styles.container}>
-      <LeafletMapView
-        center={defaultCenter}
-        zoom={16}
-        markers={markers}
+      <NativeMapView
+        region={getInitialRegion(lastMapRegion)}
+        markers={clusteredMarkers}
         userLocation={location}
         onMarkerPress={handleMarkerPress}
-        onMapReady={() => setMapReady(true)}
+        onRegionChangeComplete={handleRegionChange}
         style={styles.map}
+        showsUserLocation={locationPermissionStatus === 'granted'}
       />
 
       <SafeAreaView style={styles.overlay} pointerEvents="box-none">
@@ -210,7 +230,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: theme.colors.textMuted,
     fontSize: 15,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
   locateButton: {
     width: 52,
@@ -272,17 +292,17 @@ const styles = StyleSheet.create({
   placePillText: {
     color: theme.colors.primary,
     fontSize: 12,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   placeTitle: {
     color: theme.colors.text,
     fontSize: 18,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Poppins_800ExtraBold',
   },
   placeSubtitle: {
     color: theme.colors.textMuted,
     fontSize: 14,
     lineHeight: 21,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'DMSans_400Regular',
   },
 });
