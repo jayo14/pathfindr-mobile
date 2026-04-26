@@ -1,41 +1,40 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Eye, EyeOff, Lock, Mail, MapPinned } from 'lucide-react-native';
+import * as authService from "@/services/auth-service";
 import { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { theme } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 
-type AuthMode = 'login' | 'register';
-
-/** Mock credential store – in production this is replaced by Supabase auth. */
-const MOCK_USERS_KEY = 'pathfindr-mock-users';
-
-function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-}
+/** Simple email validation helper. */
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
 
 export default function AuthScreen() {
-  const [mode, setMode] = useState<AuthMode>('login');
+  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const setIsAuthenticated = useAppStore((state) => state.setIsAuthenticated);
+  const setHasCompletedOnboarding = useAppStore((state) => state.setHasCompletedOnboarding);
   const setIsGuest = useAppStore((state) => state.setIsGuest);
   const setUserEmail = useAppStore((state) => state.setUserEmail);
   const hasCompletedOnboarding = useAppStore((state) => state.hasCompletedOnboarding);
@@ -58,43 +57,34 @@ export default function AuthScreen() {
 
   const handleSubmit = async (): Promise<void> => {
     if (!isValidEmail(email)) {
-      Alert.alert('Invalid email', 'Please enter a valid email address.');
+      Alert.alert("Invalid email", "Please enter a valid email address.");
       return;
     }
     if (password.length < 6) {
-      Alert.alert('Weak password', 'Password must be at least 6 characters.');
+      Alert.alert("Weak password", "Password must be at least 6 characters.");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // Attempt Supabase auth if configured, otherwise use mock auth
-      const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-
-      if (supabaseUrl) {
-        const { supabase } = await import('@/services/supabase');
-        if (supabase) {
-          if (mode === 'register') {
-            const { error } = await supabase.auth.signUp({ email: email.trim(), password });
-            if (error) throw error;
-          } else {
-            const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-            if (error) throw error;
-          }
-        }
+      if (mode === "register") {
+        await authService.register(email.trim(), email.trim(), password);
+        const data = await authService.login(email.trim(), password);
+        setIsAuthenticated(true);
+        setHasCompletedOnboarding(data.user.profile.has_completed_onboarding);
       } else {
-        // Mock auth: simulate a small network delay
-        await new Promise<void>((resolve) => setTimeout(resolve, 600));
+        const data = await authService.login(email.trim(), password);
+        setIsAuthenticated(true);
+        setHasCompletedOnboarding(data.user.profile.has_completed_onboarding);
       }
 
-      setIsAuthenticated(true);
       setIsGuest(false);
       setUserEmail(email.trim());
       proceedAfterAuth();
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Authentication failed. Please try again.';
-      Alert.alert(mode === 'register' ? 'Registration failed' : 'Login failed', message);
+      const message = error instanceof Error ? error.message : "Authentication failed. Please try again.";
+      Alert.alert(mode === "register" ? "Registration failed" : "Login failed", message);
     } finally {
       setIsLoading(false);
     }

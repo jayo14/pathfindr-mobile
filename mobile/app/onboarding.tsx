@@ -1,37 +1,52 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { CalendarClock, Compass, ShieldCheck } from 'lucide-react-native';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, Text, View, TextInput, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { theme } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
-
-const highlights = [
-  {
-    title: 'Navigate smarter',
-    description: 'Find lecture halls, offices, labs, and student spots without wandering.',
-    icon: Compass,
-  },
-  {
-    title: 'Stay in the loop',
-    description: 'Catch upcoming campus events and key gatherings in one polished feed.',
-    icon: CalendarClock,
-  },
-  {
-    title: 'Recover faster',
-    description: 'Report lost or found items with place context and clear next steps.',
-    icon: ShieldCheck,
-  },
-] as const;
+import { updateProfile, submitSurvey } from '@/services/campus-service';
 
 export default function OnboardingScreen() {
   const setHasCompletedOnboarding = useAppStore((state) => state.setHasCompletedOnboarding);
+  const isGuest = useAppStore((state) => state.isGuest);
 
-  const handleContinue = (): void => {
-    setHasCompletedOnboarding(true);
-    router.replace('/(tabs)/map');
+  const [step, setStep] = useState(1);
+  const [fullName, setFullName] = useState('');
+  const [isStudent, setIsStudent] = useState(true);
+  const [college, setCollege] = useState('');
+  const [department, setDepartment] = useState('');
+  const [yearOfStudy, setYearOfStudy] = useState('');
+  const [surveyResponse, setSurveyResponse] = useState('');
+
+  const handleContinue = async (): Promise<void> => {
+    if (step === 1) {
+      if (!fullName) {
+        Alert.alert('Required', 'Please enter your full name.');
+        return;
+      }
+      setStep(2);
+    } else if (step === 2) {
+        if (!isGuest) {
+            try {
+                await updateProfile({
+                    full_name: fullName,
+                    is_student: isStudent,
+                    college: isStudent ? college : null,
+                    department: isStudent ? department : null,
+                    year_of_study: isStudent ? yearOfStudy : null,
+                    has_completed_onboarding: true,
+                });
+                await submitSurvey({ onboarding_survey: surveyResponse });
+            } catch (error) {
+                console.error("Failed to update profile", error);
+            }
+        }
+      setHasCompletedOnboarding(true);
+      router.replace('/(tabs)/map');
+    }
   };
 
   return (
@@ -40,34 +55,74 @@ export default function OnboardingScreen() {
         <SafeAreaView style={styles.safeArea} edges={['top']}>
           <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
             <View style={styles.headlineWrap}>
-              <Text style={styles.eyebrow}>Welcome to PathFindr</Text>
-              <Text style={styles.title}>Move around campus with clarity.</Text>
-              <Text style={styles.subtitle}>
-                Built for busy students who need fast routing, smarter discovery, and campus context that actually helps.
+              <Text style={styles.eyebrow}>Step {step} of 2</Text>
+              <Text style={styles.title}>
+                {step === 1 ? "Tell us about yourself" : "Help us improve PathFindr"}
               </Text>
             </View>
 
-            <View style={styles.cardList}>
-              {highlights.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <View key={item.title} style={styles.featureCard} testID={`onboarding-card-${item.title}`}>
-                    <View style={styles.featureIconWrap}>
-                      <Icon color={theme.colors.primary} size={20} />
-                    </View>
-                    <View style={styles.featureCopy}>
-                      <Text style={styles.featureTitle}>{item.title}</Text>
-                      <Text style={styles.featureDescription}>{item.description}</Text>
-                    </View>
-                  </View>
-                );
-              })}
-            </View>
+            {step === 1 ? (
+              <View style={styles.form}>
+                <Text style={styles.label}>Full Name</Text>
+                <TextInput
+                  style={styles.input}
+                  value={fullName}
+                  onChangeText={setFullName}
+                  placeholder="Enter your name"
+                />
+
+                <View style={styles.switchRow}>
+                  <Text style={styles.label}>Are you a student?</Text>
+                  <Switch value={isStudent} onValueChange={setIsStudent} />
+                </View>
+
+                {isStudent && (
+                  <>
+                    <Text style={styles.label}>College</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={college}
+                      onChangeText={setCollege}
+                      placeholder="e.g. Science & Tech"
+                    />
+                    <Text style={styles.label}>Department</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={department}
+                      onChangeText={setDepartment}
+                      placeholder="e.g. Computer Science"
+                    />
+                    <Text style={styles.label}>Year of Study</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={yearOfStudy}
+                      onChangeText={setYearOfStudy}
+                      placeholder="e.g. Year 3"
+                    />
+                  </>
+                )}
+              </View>
+            ) : (
+              <View style={styles.form}>
+                <Text style={styles.label}>Short Survey: Why are you using PathFindr?</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={surveyResponse}
+                  onChangeText={setSurveyResponse}
+                  placeholder="Your response..."
+                  multiline
+                  numberOfLines={4}
+                />
+              </View>
+            )}
           </ScrollView>
         </SafeAreaView>
       </LinearGradient>
       <SafeAreaView edges={['bottom']} style={styles.footer}>
-        <PrimaryButton label="Enter campus map" onPress={handleContinue} testID="continue-onboarding-button" />
+        <PrimaryButton
+            label={step === 1 ? "Next" : "Complete Onboarding"}
+            onPress={() => void handleContinue()}
+        />
       </SafeAreaView>
     </View>
   );
@@ -102,50 +157,36 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
   title: {
-    fontSize: 36,
-    lineHeight: 42,
+    fontSize: 32,
+    lineHeight: 40,
     fontFamily: 'Poppins_800ExtraBold',
     color: theme.colors.text,
   },
-  subtitle: {
-    fontSize: 17,
-    lineHeight: 25,
-    color: theme.colors.textMuted,
-    fontFamily: 'DMSans_400Regular',
+  form: {
+    gap: 16,
   },
-  cardList: {
-    gap: 14,
+  label: {
+    fontSize: 16,
+    fontFamily: 'Poppins_600SemiBold',
+    color: theme.colors.text,
   },
-  featureCard: {
-    flexDirection: 'row',
-    gap: 14,
-    borderRadius: theme.radius.lg,
+  input: {
     backgroundColor: '#FFFFFF',
-    padding: 18,
-    ...theme.shadow,
+    borderRadius: theme.radius.md,
+    padding: 14,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
-  featureIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 16,
+  textArea: {
+    height: 120,
+    textAlignVertical: 'top',
+  },
+  switchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.surfaceAlt,
-  },
-  featureCopy: {
-    flex: 1,
-    gap: 6,
-  },
-  featureTitle: {
-    color: theme.colors.text,
-    fontSize: 17,
-    fontFamily: 'Poppins_800ExtraBold',
-  },
-  featureDescription: {
-    color: theme.colors.textMuted,
-    fontSize: 15,
-    lineHeight: 22,
-    fontFamily: 'DMSans_400Regular',
+    paddingVertical: 8,
   },
   footer: {
     paddingHorizontal: 24,
